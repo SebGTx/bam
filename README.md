@@ -1,2 +1,2 @@
-# bam
+# BAM
 Bank Account Manager
