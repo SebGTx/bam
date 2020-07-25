@@ -17,18 +17,18 @@
     public function __construct() {
       if (isset($_GET['lang'])) {
         // the locale can be changed through the query-string
-        $this->results['src'] = 'query-string';
         $requestLang = filter_input(INPUT_GET, 'lang', FILTER_SANITIZE_STRING);
+        $this->results['src'] = 'query-string: lang='.$requestLang;
         $this->lang = $this->findLocale($requestLang);
       } elseif (isset($_COOKIE['lang'])) {
         // if the cookie is present instead, let's just keep it
-        $this->results['src'] = 'cookie';
         $requestLang = filter_input(INPUT_COOKIE, 'lang', FILTER_SANITIZE_STRING);
+        $this->results['src'] = 'cookie: lang='.$requestLang;
         $this->lang = $this->findLocale($requestLang);
       } elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
         // default: look for the languages the browser says the user accepts
-        $this->results['src'] = 'browser languages';
         $requestLangs = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        $this->results['src'] = 'browser languages: '.$requestLangs;
         array_walk($requestLangs, function (&$lang) { $lang = strtr(strtok($lang, ';'), ['-' => '_']); });
         foreach ($requestLangs as $browserLang) {
           if ($this->valid($browserLang)) {
@@ -44,6 +44,8 @@
       // here we define the global system locale given the found language
       $results = putenv("LANG=".$this->lang);
       if (!$results) $this->results['putenv'] = 'putenv failed';
+      $results = putenv("LC_ALL=".$this->lang);
+      if (!$results) $this->results['putenv LC_ALL'] = 'putenv failed';
     
       // this might be useful for date functions (LC_TIME) or money formatting (LC_MONETARY), for instance
       $results = setlocale(LC_ALL, $this->lang);
